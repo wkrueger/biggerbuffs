@@ -1,4 +1,4 @@
-## Interface: 70300
+## Interface: 80000
 ## Title: Blizzard Raid Frames - Bigger Buffs
 ## Notes: Tweaks to Blizzard's raid frames buffs.
 ## SavedVariables: biggerbuffsSaved
