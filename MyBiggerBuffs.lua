@@ -141,7 +141,6 @@ end
 
 
 local function setSize(f)
-  -- buff sizes
   local options = DefaultCompactUnitFrameSetupOptions;
   local scale = min(options.height / 36, options.width / 72);
   local buffSize = biggerbuffsSaved.Options.scalefactor * scale;
@@ -158,9 +157,9 @@ end
 
 local function showBuff(buffFrame, icon, count, expirationTime, duration)
 
-  --paste
+  --paste from blizzard ui code
   buffFrame.icon:SetTexture(icon);
-  if ( count > 1 ) then
+  if ( count or 0 > 1 ) then
     local countText = count;
     if ( count >= 10 ) then
       countText = BUFF_STACKS_OVERFLOW;
@@ -172,7 +171,7 @@ local function showBuff(buffFrame, icon, count, expirationTime, duration)
     buffFrame.count:Hide();
   end
 
-  if ( expirationTime and expirationTime ~= 0 ) then
+  if ( type(expirationTime) == "number" and expirationTime ~= 0 ) then
     local startTime = expirationTime - duration;
     buffFrame.cooldown:SetCooldown(startTime, duration);
     buffFrame.cooldown:Show();
@@ -233,8 +232,10 @@ local function activateMe()
       else
         if BiggerBuffs.CDS[clazz] == nil then return end
         while ( classBuffIdx <= #BiggerBuffs.CDS[clazz] ) do
-          local buffName,rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable
-            , shouldConsolidate,spellId = WA_GetUnitBuff(frame.displayedUnit, BiggerBuffs.CDS[clazz][classBuffIdx]);
+          local _, icon, count, _, duration, expirationTime = 
+            WA_GetUnitBuff(frame.displayedUnit, BiggerBuffs.CDS[clazz][classBuffIdx]);
+          --local buffName,rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable
+          --  , shouldConsolidate,spellId = WA_GetUnitBuff(frame.displayedUnit, BiggerBuffs.CDS[clazz][classBuffIdx]);
           classBuffIdx = classBuffIdx + 1;
           if buffName ~= nil then
             showBuff(buffFrame, icon, count, expirationTime, duration)
@@ -245,8 +246,7 @@ local function activateMe()
 
         while ( additionalBuffIdx <= #additionalBuffs ) do
           local buffName = additionalBuffs[additionalBuffIdx]
-          local buffName, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable
-            , shouldConsolidate,spellId = WA_GetUnitBuff(frame.displayedUnit, buffName);
+          local _, icon, count, _, duration, expirationTime = WA_GetUnitBuff(frame.displayedUnit, buffName);
           additionalBuffIdx  = additionalBuffIdx + 1
           if buffName ~= nil and unitCaster == 'player' then
             showBuff(buffFrame, icon, count, expirationTime, duration)
@@ -312,8 +312,6 @@ function frame:OnEvent(event, arg1)
   end
 
 end
-
-
 
 
 frame:SetScript("OnEvent", frame.OnEvent);
@@ -411,9 +409,7 @@ local EXTERNALS = {
 for key1,val1 in pairs(BiggerBuffs.CDS) do
 
   for it=1 , #EXTERNALS do
-
     tinsert(val1,EXTERNALS[it]);
-
   end
 
 end
