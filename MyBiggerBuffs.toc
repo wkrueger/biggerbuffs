@@ -4,4 +4,6 @@
 ## SavedVariables: biggerbuffsSaved
 ## LoadOnDemand: 0
 ## Author: scaleable @ azralon-US
+Utils.lua
+CooldownsData.lua
 MyBiggerBuffs.lua
