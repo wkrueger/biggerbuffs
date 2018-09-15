@@ -222,7 +222,6 @@ showBuff = function(buffFrame, icon, count, expirationTime, duration)
   else
     buffFrame.cooldown:Hide()
   end
-  print("show " .. tostring(icon) .. " " .. tostring(buffFrame))
   buffFrame:Show()
   --end paste
 end
