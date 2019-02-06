@@ -1,3 +1,6 @@
+-- luacheck: globals BiggerBuffs BiggerBuffs_Utils BiggerBuffs_CooldownsData biggerbuffsSaved
+-- luacheck: globals hooksecurefunc InCombatLockdown CompactUnitFrame_HideAllBuffs UnitClass
+
 BiggerBuffs = BiggerBuffs or {}
 
 -- import utils
@@ -14,8 +17,6 @@ local loopAllMembers = Utl.loopAllMembers
 -- import cooldowns
 local Cooldowns = BiggerBuffs_CooldownsData
 local MY_ADDITIONAL_BUFFS = Cooldowns.MY_ADDITIONAL_BUFFS
-local CDS = Cooldowns.CDS
-local EXTERNALS = Cooldowns.EXTERNALS
 
 -- [ slash commands ] --
 
@@ -136,38 +137,17 @@ activateMe = function()
       end
 
       local frameNum = 1
-      local classBuffIdx = 1
       local additionalBuffIdx = 1
-      local _, _, clazz = UnitClass(frame.displayedUnit)
       while (frameNum <= frame.maxBuffs) do
         local buffFrame = frame.buffFrames[frameNum]
         if buffFrame:IsShown() then
           frameNum = frameNum + 1
         else
-          if CDS[clazz] == nil then
-            return
-          end
-          while (classBuffIdx <= #CDS[clazz]) do
-            --print("while " .. tostring(CDS[clazz][classBuffIdx]))
-            local buffName, icon, _, _, duration, expirationTime, unitCaster =
-              WA_GetUnitBuff(frame.displayedUnit, CDS[clazz][classBuffIdx])
-            classBuffIdx = classBuffIdx + 1
-            if buffName ~= nil then
-              --print("found " .. buffName .. " - " .. expirationTime .. " " .. duration)
-              local fromSelf = unitCaster == "player" and frame.displayedUnit ~= "player"
-              if not fromSelf then
-                showBuff(buffFrame, icon, nil, expirationTime, duration)
-                frameNum = frameNum + 1
-                break
-              end
-            end
-          end
-
           while (additionalBuffIdx <= #additionalBuffs) do
             local buffName = additionalBuffs[additionalBuffIdx]
             local _, icon, _, _, duration, expirationTime, unitCaster = WA_GetUnitBuff(frame.displayedUnit, buffName)
             additionalBuffIdx = additionalBuffIdx + 1
-            if buffName ~= nil and unitCaster ~= "player" then
+            if buffName ~= nil and unitCaster == "player" then
               showBuff(buffFrame, icon, nil, expirationTime, duration)
               frameNum = frameNum + 1
               break
