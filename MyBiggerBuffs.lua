@@ -126,7 +126,6 @@ activateMe = function()
 		-- frame.icon:SetTexture(132089)
 		-- frame.count:SetText(i)
 		-- frame.count:Show()
-		-- frame:SetPoint("CENTER")
 		-- frame:Show()
 	-- end
 	-- if true then return end
@@ -203,7 +202,6 @@ showBuff = function(buffFrame, icon, count, expirationTime, duration)
 end
 
 myBigDebuff_initFunc = function(frame)
-  print("Called")
   if InCombatLockdown() == true then
   return
   end
