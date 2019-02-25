@@ -93,28 +93,8 @@ activateMe = function()
   started = true
   setSize()
 
-  hooksecurefunc(
-    "CompactUnitFrame_SetMaxBuffs",
-    function(frame, numbuffs)
-      if InCombatLockdown() == true then
-        return
-      end
-      -- insert missing frames (for >3 buffs)
-      local maxbuffs = biggerbuffsSaved.Options.maxbuffs
-      local child
-      while table.getn(frame.buffFrames) < maxbuffs do
-        child =
-          CreateFrame(
-          "Button",
-          frame:GetName() .. "Buff" .. (table.getn(frame.buffFrames) + 1),
-          frame,
-          "CompactBuffTemplate"
-        )
-      end
-      frame.maxBuffs = maxbuffs
-    end
-  )
 
+  hooksecurefunc("CompactUnitFrame_UpdateAll", myBigDebuff_initFunc)
   hooksecurefunc(
     "DefaultCompactUnitFrameSetup",
     function(f)
@@ -124,6 +104,8 @@ activateMe = function()
       setSize()
     end
   )
+
+
 
   hooksecurefunc(
     "CompactUnitFrame_UpdateBuffs",
@@ -135,6 +117,20 @@ activateMe = function()
         CompactUnitFrame_HideAllBuffs(frame)
         return
       end
+      
+      -- debug code to fill all buffs with icons
+      -- for i=1,10 do
+		-- local name = frame:GetName() .. "Buff" 
+		-- local frame = _G[name .. i]
+		-- if frame == nil then break end
+		-- frame.icon:SetTexture(132089)
+		-- frame.count:SetText(i)
+		-- frame.count:Show()
+		-- frame:SetPoint("CENTER")
+		-- frame:Show()
+	-- end
+	-- if true then return end
+	-- end debuff code
 
       local frameNum = 1
       local additionalBuffIdx = 1
@@ -204,6 +200,34 @@ showBuff = function(buffFrame, icon, count, expirationTime, duration)
   end
   buffFrame:Show()
   --end paste
+end
+
+myBigDebuff_initFunc = function(frame)
+  print("Called")
+  if InCombatLockdown() == true then
+  return
+  end
+  
+  -- insert and reposition missing frames (for >3 buffs)
+  local maxbuffs = biggerbuffsSaved.Options.maxbuffs
+  
+  for i = 4, maxbuffs do
+  local name = frame:GetName() .. "Buff" 
+  local child = _G[name .. i] or
+    CreateFrame(
+    "Button",
+    name .. i,
+    frame,
+    "CompactBuffTemplate"
+  )
+  child:ClearAllPoints()
+  if math.fmod(i - 1, 3) == 0 then  -- (i-1) % 3 == 0
+    child:SetPoint("BOTTOMRIGHT", _G[name .. i - 3], "TOPRIGHT")
+  else
+    child:SetPoint("BOTTOMRIGHT", _G[name .. i - 1], "BOTTOMLEFT")
+  end
+  end
+  frame.maxBuffs = maxbuffs
 end
 
 local frame = CreateFrame("FRAME")
