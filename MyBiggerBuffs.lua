@@ -34,6 +34,10 @@ function SlashCmdList.BIGGERBUFFS(msg)
     print("In order to get a display update, switch between raid profiles.")
   elseif splitted[0] == "hidenames" and tonumber(splitted[1]) ~= nil then
     biggerbuffsSaved.Options.hidenames = tonumber(splitted[1])
+  elseif splitted[0] == "rowsize" and tonumber(splitted[1]) ~= nil and tonumber(splitted[1]) >= 3 then
+    biggerbuffsSaved.Options.rowsize = tonumber(splitted[1])
+    print("Rowsize updated.")
+    print("In order to get a display update, switch between raid profiles.")
   else
     print("Invalid arguments. Possible options are:")
     print("scale xx - Aura size factor. Default is 15. Blizzard's is 11.")
@@ -45,7 +49,7 @@ end
 -- [ startup ] --
 
 local started = false
-local addonFrameInit, activateMe, setSize, showBuff
+local addonFrameInit, activateMe, setSize, showBuff, createBuffFrames
 
 addonFrameInit = function(self, event, arg1)
   if event == "ADDON_LOADED" and arg1 == "MyBiggerBuffs" then
@@ -54,12 +58,15 @@ addonFrameInit = function(self, event, arg1)
         ["Options"] = {
           ["scalefactor"] = 15,
           ["maxbuffs"] = 5,
-          ["hidenames"] = 0
+          ["hidenames"] = 0,
+          ["rowsize"] = 3
         }
       }
     end
 
     local options = biggerbuffsSaved.Options
+
+    --"schema migrations"
 
     --version 4
     if options.maxbuffs == nil then
@@ -68,6 +75,10 @@ addonFrameInit = function(self, event, arg1)
     --version 6
     if options.hidenames == nil then
       options.hidenames = 0
+    end
+    --multiple rows version
+    if options.rowsize == nil then
+      options.rowsize = 3
     end
 
     activateMe()
@@ -93,28 +104,7 @@ activateMe = function()
   started = true
   setSize()
 
-  hooksecurefunc(
-    "CompactUnitFrame_SetMaxBuffs",
-    function(frame, numbuffs)
-      if InCombatLockdown() == true then
-        return
-      end
-      -- insert missing frames (for >3 buffs)
-      local maxbuffs = biggerbuffsSaved.Options.maxbuffs
-      local child
-      while table.getn(frame.buffFrames) < maxbuffs do
-        child =
-          CreateFrame(
-          "Button",
-          frame:GetName() .. "Buff" .. (table.getn(frame.buffFrames) + 1),
-          frame,
-          "CompactBuffTemplate"
-        )
-      end
-      frame.maxBuffs = maxbuffs
-    end
-  )
-
+  hooksecurefunc("CompactUnitFrame_UpdateAll", createBuffFrames)
   hooksecurefunc(
     "DefaultCompactUnitFrameSetup",
     function(f)
@@ -135,6 +125,19 @@ activateMe = function()
         CompactUnitFrame_HideAllBuffs(frame)
         return
       end
+
+      -- debug code to fill all buffs with icons
+      -- for i=1,10 do
+      -- local name = frame:GetName() .. "Buff"
+      -- local frame = _G[name .. i]
+      -- if frame == nil then break end
+      -- frame.icon:SetTexture(132089)
+      -- frame.count:SetText(i)
+      -- frame.count:Show()
+      -- frame:Show()
+      -- end
+      -- if true then return end
+      -- end debuff code
 
       local frameNum = 1
       local additionalBuffIdx = 1
@@ -204,6 +207,28 @@ showBuff = function(buffFrame, icon, count, expirationTime, duration)
   end
   buffFrame:Show()
   --end paste
+end
+
+createBuffFrames = function(frame)
+  if InCombatLockdown() == true then
+    return
+  end
+
+  -- insert and reposition missing frames (for >3 buffs)
+  local maxbuffs = biggerbuffsSaved.Options.maxbuffs
+  local rowsize = biggerbuffsSaved.Options.rowsize or 3
+
+  for i = 4, maxbuffs do
+    local name = frame:GetName() .. "Buff"
+    local child = _G[name .. i] or CreateFrame("Button", name .. i, frame, "CompactBuffTemplate")
+    child:ClearAllPoints()
+    if math.fmod(i - 1, rowsize) == 0 then -- (i-1) % 3 == 0
+      child:SetPoint("BOTTOMRIGHT", _G[name .. i - rowsize], "TOPRIGHT")
+    else
+      child:SetPoint("BOTTOMRIGHT", _G[name .. i - 1], "BOTTOMLEFT")
+    end
+  end
+  frame.maxBuffs = maxbuffs
 end
 
 local frame = CreateFrame("FRAME")
