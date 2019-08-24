@@ -1,22 +1,19 @@
--- luacheck: globals BiggerBuffs BiggerBuffs_Utils BiggerBuffs_CooldownsData biggerbuffsSaved
--- luacheck: globals hooksecurefunc InCombatLockdown CompactUnitFrame_HideAllBuffs UnitClass
-
 BiggerBuffs = BiggerBuffs or {}
 
 -- import utils
 local Utl = BiggerBuffs_Utils
--- local WA_GetUnitAura = Utl.WA_GetUnitAura
-local WA_GetUnitBuff = Utl.WA_GetUnitBuff
--- local WA_GetUnitDebuff = Utl.WA_GetUnitDebuff
--- local WA_IterateGroupMembers = Utl.WA_IterateGroupMembers
--- local WA_ClassColorName = Utl.WA_ClassColorName
 local strsplit = Utl.strsplit
--- local GetFrame = Utl.GetFrame
 local loopAllMembers = Utl.loopAllMembers
 
 -- import cooldowns
-local Cooldowns = BiggerBuffs_CooldownsData
-local MY_ADDITIONAL_BUFFS = Cooldowns.MY_ADDITIONAL_BUFFS
+local MY_ADDITIONAL_BUFFS = BiggerBuffs_CooldownsData.MY_ADDITIONAL_BUFFS
+local MY_ADDITIONAL_BUFFS_IDX = {}
+for it = 1, #MY_ADDITIONAL_BUFFS do
+  MY_ADDITIONAL_BUFFS_IDX[MY_ADDITIONAL_BUFFS[it]] = true
+end
+
+-- locals
+local activateMe, started = false, createBuffFrames
 
 -- [ slash commands ] --
 
@@ -48,165 +45,94 @@ end
 
 -- [ startup ] --
 
-local started = false
-local addonFrameInit, activateMe, setSize, showBuff, createBuffFrames
-
-addonFrameInit = function(self, event, arg1)
-  if event == "ADDON_LOADED" and arg1 == "MyBiggerBuffs" then
-    if biggerbuffsSaved == nil then
-      biggerbuffsSaved = {
-        ["Options"] = {
-          ["scalefactor"] = 15,
-          ["maxbuffs"] = 5,
-          ["hidenames"] = 0,
-          ["rowsize"] = 3
+local frame = CreateFrame("FRAME")
+frame:RegisterEvent("ADDON_LOADED")
+frame:RegisterEvent("READY_CHECK")
+frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+frame:SetScript(
+  "OnEvent",
+  function(self, event, arg1)
+    if event == "ADDON_LOADED" and arg1 == "MyBiggerBuffs" then
+      if biggerbuffsSaved == nil then
+        biggerbuffsSaved = {
+          ["Options"] = {
+            ["scalefactor"] = 15,
+            ["maxbuffs"] = 5,
+            ["hidenames"] = 0,
+            ["rowsize"] = 3
+          }
         }
-      }
-    end
-
-    local options = biggerbuffsSaved.Options
-
-    --"schema migrations"
-
-    --version 4
-    if options.maxbuffs == nil then
-      options.maxbuffs = 3
-    end
-    --version 6
-    if options.hidenames == nil then
-      options.hidenames = 0
-    end
-    --multiple rows version
-    if options.rowsize == nil then
-      options.rowsize = 3
-    end
-
-    activateMe()
-  elseif event == "PLAYER_REGEN_ENABLED" and biggerbuffsSaved.Options.hidenames == 1 and started == true then
-    loopAllMembers(
-      function(frameName)
-        _G[frameName .. "Name"]:Show()
       end
-    )
-  elseif event == "PLAYER_REGEN_DISABLED" and biggerbuffsSaved.Options.hidenames == 1 and started == true then
-    loopAllMembers(
-      function(frameName)
-        _G[frameName .. "Name"]:Hide()
+
+      local options = biggerbuffsSaved.Options
+
+      --"schema migrations"
+
+      --version 4
+      if options.maxbuffs == nil then
+        options.maxbuffs = 3
       end
-    )
+      --version 6
+      if options.hidenames == nil then
+        options.hidenames = 0
+      end
+      --multiple rows version
+      if options.rowsize == nil then
+        options.rowsize = 3
+      end
+
+      activateMe()
+    elseif event == "PLAYER_REGEN_ENABLED" and biggerbuffsSaved.Options.hidenames == 1 and started == true then
+      loopAllMembers(
+        function(frameName)
+          _G[frameName .. "Name"]:Show()
+        end
+      )
+    elseif event == "PLAYER_REGEN_DISABLED" and biggerbuffsSaved.Options.hidenames == 1 and started == true then
+      loopAllMembers(
+        function(frameName)
+          _G[frameName .. "Name"]:Hide()
+        end
+      )
+    end
   end
-end
+)
 
 activateMe = function()
   if started == true then
     return
   end
   started = true
-  setSize()
 
   hooksecurefunc("CompactUnitFrame_UpdateAll", createBuffFrames)
-  hooksecurefunc(
-    "DefaultCompactUnitFrameSetup",
-    function(f)
-      if InCombatLockdown() == true then
-        return
-      end
-      setSize()
-    end
-  )
 
   hooksecurefunc(
     "CompactUnitFrame_UpdateBuffs",
-    function(frame)
-      local additionalBuffs = MY_ADDITIONAL_BUFFS or {}
-
-      --copy-pasted and adapted from blizz UI code
-      if (not frame.optionTable.displayBuffs) then
-        CompactUnitFrame_HideAllBuffs(frame)
-        return
-      end
-
-      -- debug code to fill all buffs with icons
-      -- for i=1,10 do
-      -- local name = frame:GetName() .. "Buff"
-      -- local frame = _G[name .. i]
-      -- if frame == nil then break end
-      -- frame.icon:SetTexture(132089)
-      -- frame.count:SetText(i)
-      -- frame.count:Show()
-      -- frame:Show()
-      -- end
-      -- if true then return end
-      -- end debuff code
-
+    function(frame, forHookingOnly)
+      local index = 1
       local frameNum = 1
-      local additionalBuffIdx = 1
+      local filter = nil
       while (frameNum <= frame.maxBuffs) do
         local buffFrame = frame.buffFrames[frameNum]
         if buffFrame:IsShown() then
           frameNum = frameNum + 1
         else
-          while (additionalBuffIdx <= #additionalBuffs) do
-            local buffName = additionalBuffs[additionalBuffIdx]
-            local _, icon, _, _, duration, expirationTime, unitCaster = WA_GetUnitBuff(frame.displayedUnit, buffName)
-            additionalBuffIdx = additionalBuffIdx + 1
-            if buffName ~= nil and unitCaster == "player" then
-              showBuff(buffFrame, icon, nil, expirationTime, duration)
+          local buffName = UnitBuff(frame.displayedUnit, index, filter)
+          if (buffName) then
+            if MY_ADDITIONAL_BUFFS_IDX[buffName] ~= nil then
+              CompactUnitFrame_UtilSetBuff(buffFrame, frame.displayedUnit, index, filter)
               frameNum = frameNum + 1
-              break
             end
+          else
+            -- we've finished looping through all buffs
+            break
           end
-          return
         end
+        index = index + 1
       end
     end
   )
-end
-
-setSize = function(f)
-  local options = DefaultCompactUnitFrameSetupOptions
-  local scale = min(options.height / 36, options.width / 72)
-  local buffSize = biggerbuffsSaved.Options.scalefactor * scale
-
-  loopAllMembers(
-    function(f2)
-      if not f2 then
-        return
-      end
-      for i = 1, #f2.buffFrames do
-        f2.buffFrames[i]:SetSize(buffSize, buffSize)
-      end
-    end
-  )
-end
-
-showBuff = function(buffFrame, icon, count, expirationTime, duration)
-  if icon == nil then
-    return
-  end
-  --paste from blizzard ui code
-  buffFrame.icon:SetTexture(icon)
-  if (count or 0 > 1) then
-    local countText = count
-    if (count >= 10) then
-      countText = BUFF_STACKS_OVERFLOW
-    end
-
-    buffFrame.count:Show()
-    buffFrame.count:SetText(countText)
-  else
-    buffFrame.count:Hide()
-  end
-
-  if (type(expirationTime) == "number" and expirationTime ~= 0) then
-    local startTime = expirationTime - duration
-    buffFrame.cooldown:SetCooldown(startTime, duration)
-    buffFrame.cooldown:Show()
-  else
-    buffFrame.cooldown:Hide()
-  end
-  buffFrame:Show()
-  --end paste
 end
 
 createBuffFrames = function(frame)
@@ -218,22 +144,26 @@ createBuffFrames = function(frame)
   local maxbuffs = biggerbuffsSaved.Options.maxbuffs
   local rowsize = biggerbuffsSaved.Options.rowsize or 3
 
+  local frameName = frame:GetName() .. "Buff"
   for i = 4, maxbuffs do
-    local name = frame:GetName() .. "Buff"
-    local child = _G[name .. i] or CreateFrame("Button", name .. i, frame, "CompactBuffTemplate")
+    local child = _G[frameName .. i] or CreateFrame("Button", frameName .. i, frame, "CompactBuffTemplate")
     child:ClearAllPoints()
     if math.fmod(i - 1, rowsize) == 0 then -- (i-1) % 3 == 0
-      child:SetPoint("BOTTOMRIGHT", _G[name .. i - rowsize], "TOPRIGHT")
+      child:SetPoint("BOTTOMRIGHT", _G[frameName .. i - rowsize], "TOPRIGHT")
     else
-      child:SetPoint("BOTTOMRIGHT", _G[name .. i - 1], "BOTTOMLEFT")
+      child:SetPoint("BOTTOMRIGHT", _G[frameName .. i - 1], "BOTTOMLEFT")
     end
   end
   frame.maxBuffs = maxbuffs
-end
 
-local frame = CreateFrame("FRAME")
-frame:RegisterEvent("ADDON_LOADED")
-frame:RegisterEvent("READY_CHECK")
-frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-frame:RegisterEvent("PLAYER_REGEN_DISABLED")
-frame:SetScript("OnEvent", addonFrameInit)
+  -- update size
+  local options = DefaultCompactUnitFrameSetupOptions
+  local scale = min(options.height / 36, options.width / 72)
+  local buffSize = biggerbuffsSaved.Options.scalefactor * scale
+  for i = 1, maxbuffs do
+    local child = _G[frameName .. i]
+    if child then
+      child:SetSize(buffSize, buffSize)
+    end
+  end
+end
