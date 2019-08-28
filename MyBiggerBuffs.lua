@@ -118,8 +118,8 @@ activateMe = function()
         if buffFrame:IsShown() then
           frameNum = frameNum + 1
         else
-          local buffName = UnitBuff(frame.displayedUnit, index, filter)
-          if (buffName) then
+          local buffName, _, _, _, _, _, source = UnitBuff(frame.displayedUnit, index, "PLAYER")
+          if buffName and source == "player" then
             if MY_ADDITIONAL_BUFFS_IDX[buffName] ~= nil then
               CompactUnitFrame_UtilSetBuff(buffFrame, frame.displayedUnit, index, filter)
               frameNum = frameNum + 1
