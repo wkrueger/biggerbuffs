@@ -7,6 +7,7 @@ local loopAllMembers = Utl.loopAllMembers
 
 -- import cooldowns
 local MY_ADDITIONAL_BUFFS = BiggerBuffs_CooldownsData.MY_ADDITIONAL_BUFFS
+local BANNED_BUFFS = BiggerBuffs_CooldownsData.BANNED_BUFFS
 local MY_ADDITIONAL_BUFFS_IDX = {}
 for it = 1, #MY_ADDITIONAL_BUFFS do
   MY_ADDITIONAL_BUFFS_IDX[MY_ADDITIONAL_BUFFS[it]] = true
@@ -107,32 +108,19 @@ activateMe = function()
 
   hooksecurefunc("CompactUnitFrame_UpdateAll", createBuffFrames)
 
-  hooksecurefunc(
-    "CompactUnitFrame_UpdateBuffs",
-    function(frame, forHookingOnly)
-      local index = 1
-      local frameNum = 1
-      local filter = nil
-      while (frameNum <= frame.maxBuffs) do
-        local buffFrame = frame.buffFrames[frameNum]
-        if buffFrame:IsShown() then
-          frameNum = frameNum + 1
-        else
-          local buffName, _, _, _, _, _, source = UnitBuff(frame.displayedUnit, index, "PLAYER")
-          if buffName and source == "player" then
-            if MY_ADDITIONAL_BUFFS_IDX[buffName] ~= nil then
-              CompactUnitFrame_UtilSetBuff(buffFrame, frame.displayedUnit, index, filter)
-              frameNum = frameNum + 1
-            end
-          else
-            -- we've finished looping through all buffs
-            break
-          end
-        end
-        index = index + 1
-      end
+  local prevhook = _G.CompactUnitFrame_UtilShouldDisplayBuff
+  _G.CompactUnitFrame_UtilShouldDisplayBuff = function(...)
+    -- print(vdump({...}))
+    local buffName, _, _, _, _, _, source, _, _, spellId = UnitAura(...)
+    -- print(name .. spellId)
+    if BANNED_BUFFS[spellId] ~= nil then
+      return false
     end
-  )
+    if source == "player" and MY_ADDITIONAL_BUFFS_IDX[buffName] ~= nil then
+      return true
+    end
+    return prevhook(...)
+  end
 end
 
 createBuffFrames = function(frame)

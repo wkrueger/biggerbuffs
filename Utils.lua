@@ -114,6 +114,21 @@ local loopAllMembers = function(callback)
   end
 end
 
+local function vdump(o)
+  if type(o) == "table" then
+    local s = "{ "
+    for k, v in pairs(o) do
+      if type(k) ~= "number" then
+        k = '"' .. k .. '"'
+      end
+      s = s .. "[" .. k .. "] = " .. vdump(v) .. ","
+    end
+    return s .. "} "
+  else
+    return tostring(o)
+  end
+end
+
 _G.BiggerBuffs_Utils = {
   WA_GetUnitAura = WA_GetUnitAura,
   WA_GetUnitBuff = WA_GetUnitBuff,
@@ -122,5 +137,6 @@ _G.BiggerBuffs_Utils = {
   WA_ClassColorName = WA_ClassColorName,
   strsplit = strsplit,
   GetFrame = GetFrame,
-  loopAllMembers = loopAllMembers
+  loopAllMembers = loopAllMembers,
+  vdump = vdump
 }
