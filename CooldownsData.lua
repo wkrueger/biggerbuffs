@@ -8,8 +8,8 @@ local MY_ADDITIONAL_BUFFS = {
 }
 
 local BANNED_BUFFS = {
-  [210320] = true, -- Devotion Aura
-  [303698] = true -- Luminous Jellyweed
+  ["Devotion Aura"] = true, -- Devotion Aura
+  ["Luminous Jellyweed"] = true -- Luminous Jellyweed
 }
 
 BiggerBuffs_CooldownsData = {

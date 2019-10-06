@@ -110,14 +110,18 @@ activateMe = function()
 
   local prevhook = _G.CompactUnitFrame_UtilShouldDisplayBuff
   _G.CompactUnitFrame_UtilShouldDisplayBuff = function(...)
-    -- print(vdump({...}))
-    local buffName, _, _, _, _, _, source, _, _, spellId = UnitAura(...)
-    -- print(name .. spellId)
-    if BANNED_BUFFS[spellId] ~= nil then
-      return false
-    end
-    if source == "player" and MY_ADDITIONAL_BUFFS_IDX[buffName] ~= nil then
-      return true
+    local buffName, _, _, _, _, _, source = ...
+    -- if buffName == "Devotion Aura" then
+    --   print(Utl.vdump({...}))
+    -- end
+    -- local buffName, _, _, _, _, _, source, _, _, spellId = UnitAura(...)
+    if source == "player" then
+      if BANNED_BUFFS[buffName] ~= nil then
+        return false
+      end
+      if MY_ADDITIONAL_BUFFS_IDX[buffName] ~= nil then
+        return true
+      end
     end
     return prevhook(...)
   end
