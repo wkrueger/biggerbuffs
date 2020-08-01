@@ -13,5 +13,4 @@ buff indicator behavior. A tiny hack I've wrote and now have been using for seve
 In order to understand what we are hooking, look for and download a copy of the base
 wow UI code, knows as "FrameXML".
 
-Feel free to submit pull requests, especially if you are an experienced
-addon creator!
+Feel free to submit pull requests!
