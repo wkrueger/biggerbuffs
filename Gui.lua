@@ -18,24 +18,21 @@ local function trueKeys(obj)
   return out
 end
 
-local function strSplit(str, sep)
-  if sep == nil then
-    sep = "%s"
+local function strSplit(inputstr)
+  local t = {}
+  for str in string.gmatch(inputstr, "([^" .. "\n" .. "]+)") do
+    table.insert(t, str)
   end
-
-  local res = {}
-  local func = function(w)
-    table.insert(res, w)
-  end
-
-  string.gsub(str, "[^" .. sep .. "]+", func)
-  return res
+  return t
 end
 
 local function map(arr, fn)
   local out = {}
   for k, v in pairs(arr) do
-    out[k] = fn(v)
+    local val = fn(v)
+    if val:len() > 0 then
+      out[k] = val
+    end
   end
   return out
 end
@@ -48,6 +45,8 @@ end
 local shown = false
 
 local function ShowUI()
+  shown = true
+
   local frame = AceGUI:Create("Frame")
   frame:SetTitle("Hello Bigger Buffs")
   frame:SetLayout("Flow")
@@ -82,19 +81,38 @@ local function ShowUI()
   _bannedBuffs:SetLabel("Banned Buffs")
   _bannedBuffs:SetWidth(300)
   _bannedBuffs:SetHeight(200)
-  _bannedBuffs:SetText("")
   local bannedTxt = table.concat(trueKeys(Saved.root().bannedBuffs), "\n")
   _bannedBuffs:SetText(bannedTxt)
   frame:AddChild(_bannedBuffs)
 
+  local _message = AceGUI:Create("Label")
+  _message:SetFullWidth(true)
+  _message:SetText("Changes only are reflected after closing this window and switching raid profiles.")
+  frame:AddChild(_message)
+
   frame:SetCallback(
     "OnClose",
     function(wg)
+      shown = false
       Saved.setOption("scalefactor", tonumber(_scale:GetText()))
       Saved.setOption("maxbuffs", tonumber(_maxbuffs:GetText()))
       Saved.setOption("rowsize", tonumber(_rowsize:GetText()))
-      Saved.setAdditionalBuffs(strSplit(_additionalBuffs, "\n"))
-      Saved.setBannedBuffs(strSplit(_bannedBuffs, "\n"))
+      Saved.setAdditionalBuffs(
+        map(
+          strSplit(_additionalBuffs:GetText()),
+          function(str)
+            return trim(str)
+          end
+        )
+      )
+      Saved.setBannedBuffs(
+        map(
+          strSplit(_bannedBuffs:GetText()),
+          function(str)
+            return trim(str)
+          end
+        )
+      )
     end
   )
 end

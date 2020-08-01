@@ -36,13 +36,8 @@ function SlashCmdList.BIGGERBUFFS(msg)
     Saved.setOption("rowsize", tonumber(option))
     print("Rowsize updated.")
     print("In order to get a display update, switch between raid profiles.")
-  elseif command == "ui" then
-    BiggerBuffs.ShowUI()
   else
-    print("Invalid arguments. Possible options are:")
-    print("scale xx - Aura size factor. Default is 15. Blizzard's is 11.")
-    print("maxbuffs xx")
-    print("hidenames 0/1 - hides names in combat.")
+    BiggerBuffs.ShowUI()
   end
 end
 
@@ -85,13 +80,6 @@ local function createBuffFrames(frame)
 end
 
 local function activateMe()
-  local bannedBuffs = Saved.root().bannedBuffs
-  local additionalBuffs = Saved.root().additionalBuffs
-  local additionalBuffsIdx = {}
-  for it = 1, #additionalBuffs do
-    additionalBuffsIdx[additionalBuffs[it]] = true
-  end
-
   if started == true then
     return
   end
@@ -101,11 +89,10 @@ local function activateMe()
 
   local prevhook = _G.CompactUnitFrame_UtilShouldDisplayBuff
   _G.CompactUnitFrame_UtilShouldDisplayBuff = function(...)
+    local bannedBuffs = Saved.root().bannedBuffs
+    local additionalBuffsIdx = Saved.root().additionalBuffsIdx
+
     local buffName, _, _, _, _, _, source = ...
-    -- if buffName == "Devotion Aura" then
-    --   print(Utl.vdump({...}))
-    -- end
-    -- local buffName, _, _, _, _, _, source, _, _, spellId = UnitAura(...)
     if source == "player" then
       if bannedBuffs[buffName] ~= nil then
         return false

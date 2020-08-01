@@ -30,14 +30,16 @@ local function init()
   end
 
   -- if biggerbuffsSaved.additionalBuffs == nil then
-  biggerbuffsSaved.additionalBuffs = {
-    "Focused Growth",
-    "Cultivation",
-    "Spring Blossoms",
-    "Grove Tending",
-    "Light's Grace",
-    "Extend Life"
-  }
+  BiggerBuffs.Saved.setAdditionalBuffs(
+    {
+      "Focused Growth",
+      "Cultivation",
+      "Spring Blossoms",
+      "Grove Tending",
+      "Light's Grace",
+      "Extend Life"
+    }
+  )
   -- end
 
   if biggerbuffsSaved.bannedBuffs == nil then
@@ -60,12 +62,17 @@ BiggerBuffs.Saved = {
   end,
   ["setAdditionalBuffs"] = function(arr)
     biggerbuffsSaved.additionalBuffs = arr
+    local additionalBuffsIdx = {}
+    for it = 1, #arr do
+      additionalBuffsIdx[arr[it]] = true
+    end
+    biggerbuffsSaved.additionalBuffsIdx = additionalBuffsIdx
   end,
   setBannedBuffs = function(list)
     local keys = {}
     for _, v in pairs(list) do
       keys[v] = true
     end
-    return keys
+    biggerbuffsSaved.bannedBuffs = keys
   end
 }
