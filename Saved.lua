@@ -29,18 +29,18 @@ local function init()
     options.rowsize = 3
   end
 
-  -- if biggerbuffsSaved.additionalBuffs == nil then
-  BiggerBuffs.Saved.setAdditionalBuffs(
-    {
-      "Focused Growth",
-      "Cultivation",
-      "Spring Blossoms",
-      "Grove Tending",
-      "Light's Grace",
-      "Extend Life"
-    }
-  )
-  -- end
+  if biggerbuffsSaved.additionalBuffs == nil then
+    BiggerBuffs.Saved.setAdditionalBuffs(
+      {
+        "Focused Growth",
+        "Cultivation",
+        "Spring Blossoms",
+        "Grove Tending",
+        "Light's Grace",
+        "Extend Life"
+      }
+    )
+  end
 
   if biggerbuffsSaved.bannedBuffs == nil then
     biggerbuffsSaved.bannedBuffs = {
