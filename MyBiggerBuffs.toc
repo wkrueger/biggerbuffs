@@ -4,6 +4,7 @@
 ## SavedVariables: biggerbuffsSaved
 ## LoadOnDemand: 0
 ## Author: scaleable @ azralon-US
+## Version: 9.2.1
 
 embeds.xml
 

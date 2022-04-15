@@ -89,15 +89,15 @@ local function activateMe()
 
   local prevhook = _G.CompactUnitFrame_UtilShouldDisplayBuff
   _G.CompactUnitFrame_UtilShouldDisplayBuff = function(...)
-    local bannedBuffs = Saved.root().bannedBuffs
+    local bannedBuffsIdx = Saved.root().bannedBuffsIdx
     local additionalBuffsIdx = Saved.root().additionalBuffsIdx
 
-    local buffName, _, _, _, _, _, source = ...
+    local source, buffId = ...
     if source == "player" then
-      if bannedBuffs[buffName] ~= nil then
+      if bannedBuffsIdx[buffId] ~= nil then
         return false
       end
-      if additionalBuffsIdx[buffName] ~= nil then
+      if additionalBuffsIdx[buffId] ~= nil then
         return true
       end
     end

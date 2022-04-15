@@ -6,17 +6,6 @@ local Saved = BiggerBuffs.Saved
 local LibStub = LibStub
 local AceGUI = LibStub("AceGUI-3.0")
 
-local function trueKeys(obj)
-  local out = {}
-  local it = 1
-  for k, v in pairs(obj) do
-    if v then
-      out[it] = k
-      it = it + 1
-    end
-  end
-  return out
-end
 
 local function strSplit(inputstr)
   local t = {}
@@ -42,11 +31,7 @@ local function trim(s)
   return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
-local shown = false
-
 local function ShowUI()
-  shown = true
-
   local frame = AceGUI:Create("Frame")
   frame:SetTitle("Hello Bigger Buffs")
   frame:SetLayout("Flow")
@@ -69,6 +54,11 @@ local function ShowUI()
   _rowsize:SetText(Saved.getOption("rowsize"))
   frame:AddChild(_rowsize)
 
+  local _message = AceGUI:Create("Label")
+  _message:SetFullWidth(true)
+  _message:SetText("Icon scale, max buff and row size are only reflected after switching between two raid profiles.")
+  frame:AddChild(_message)
+
   local _additionalBuffs = AceGUI:Create("MultiLineEditBox")
   _additionalBuffs:SetLabel("Additional Buffs")
   _additionalBuffs:SetWidth(300)
@@ -81,19 +71,18 @@ local function ShowUI()
   _bannedBuffs:SetLabel("Banned Buffs")
   _bannedBuffs:SetWidth(300)
   _bannedBuffs:SetHeight(200)
-  local bannedTxt = table.concat(trueKeys(Saved.root().bannedBuffs), "\n")
+  local bannedTxt = table.concat(Saved.root().bannedBuffs, "\n")
   _bannedBuffs:SetText(bannedTxt)
   frame:AddChild(_bannedBuffs)
 
   local _message = AceGUI:Create("Label")
   _message:SetFullWidth(true)
-  _message:SetText("Changes only are reflected after closing this window and switching raid profiles.")
+  _message:SetText("Only the first word on each line is taken into account.")
   frame:AddChild(_message)
 
   frame:SetCallback(
     "OnClose",
     function(wg)
-      shown = false
       Saved.setOption("scalefactor", tonumber(_scale:GetText()))
       Saved.setOption("maxbuffs", tonumber(_maxbuffs:GetText()))
       Saved.setOption("rowsize", tonumber(_rowsize:GetText()))

@@ -1,4 +1,5 @@
 BiggerBuffs = BiggerBuffs or {}
+local Utils = _G.BiggerBuffs_Utils
 
 local function init()
   if biggerbuffsSaved == nil then
@@ -8,7 +9,7 @@ local function init()
         ["maxbuffs"] = 5,
         ["hidenames"] = 0,
         ["rowsize"] = 3
-      }
+      },
     }
   end
 
@@ -29,24 +30,33 @@ local function init()
     options.rowsize = 3
   end
 
-  if biggerbuffsSaved.additionalBuffs == nil then
+  if biggerbuffsSaved.additionalBuffs == nil or biggerbuffsSaved.Version == nil then
     BiggerBuffs.Saved.setAdditionalBuffs(
       {
-        "Focused Growth",
-        "Cultivation",
-        "Spring Blossoms",
-        "Grove Tending",
-        "Light's Grace",
-        "Extend Life"
+        "203553 (Focused Growth)",
+        "200390 (Cultivation)",
+        "207386 (Spring Blossoms)",
+        "216327 (Light's Grace)",
       }
     )
   end
 
-  if biggerbuffsSaved.bannedBuffs == nil then
-    biggerbuffsSaved.bannedBuffs = {
-      ["Devotion Aura"] = true -- Devotion Aura
-    }
+  if biggerbuffsSaved.bannedBuffs == nil or
+      biggerbuffsSaved.Version == nil or biggerbuffsSaved.bannedBuffsIdx == nil then
+    BiggerBuffs.Saved.setBannedBuffs({
+      "465 (Devotion Aura)"
+    })
   end
+
+  biggerbuffsSaved.Version = 92001
+
+
+end
+
+local function mapAuraNameToId(auraName)
+  local split = Utils.strsplit(auraName, ' ')
+  local num = tonumber(split[0])
+  return num
 end
 
 BiggerBuffs.Saved = {
@@ -61,18 +71,25 @@ BiggerBuffs.Saved = {
     return biggerbuffsSaved
   end,
   ["setAdditionalBuffs"] = function(arr)
-    biggerbuffsSaved.additionalBuffs = arr
-    local additionalBuffsIdx = {}
+    local indexed = {}
     for it = 1, #arr do
-      additionalBuffsIdx[arr[it]] = true
+      local found = mapAuraNameToId(arr[it])
+      if found ~= nil then
+        indexed[found] = true
+      end
     end
-    biggerbuffsSaved.additionalBuffsIdx = additionalBuffsIdx
+    biggerbuffsSaved.additionalBuffs = arr
+    biggerbuffsSaved.additionalBuffsIdx = indexed
   end,
-  setBannedBuffs = function(list)
-    local keys = {}
-    for _, v in pairs(list) do
-      keys[v] = true
+  ["setBannedBuffs"] = function(list)
+    local indexed = {}
+    for it = 1, #list do
+      local found = mapAuraNameToId(list[it])
+      if found ~= nil then
+        indexed[found] = true
+      end
     end
-    biggerbuffsSaved.bannedBuffs = keys
+    biggerbuffsSaved.bannedBuffs = list
+    biggerbuffsSaved.bannedBuffsIdx = indexed
   end
 }
