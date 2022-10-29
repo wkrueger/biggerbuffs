@@ -5,7 +5,6 @@ local hooksecurefunc = hooksecurefunc
 local CreateFrame = CreateFrame
 local SlashCmdList = SlashCmdList
 local InCombatLockdown = InCombatLockdown
-local DefaultCompactUnitFrameSetupOptions = DefaultCompactUnitFrameSetupOptions
 
 -- import local
 local Utl = BiggerBuffs_Utils
@@ -68,8 +67,7 @@ local function createBuffFrames(frame)
   frame.maxBuffs = maxbuffs
 
   -- update size
-  local options = DefaultCompactUnitFrameSetupOptions
-  local scale = min(options.height / 36, options.width / 72)
+  local scale = 1.25
   local buffSize = Saved.getOption("scalefactor") * scale
   for i = 1, maxbuffs do
     local child = _G[frameName .. i]
@@ -87,8 +85,8 @@ local function activateMe()
 
   hooksecurefunc("CompactUnitFrame_UpdateAll", createBuffFrames)
 
-  local prevhook = _G.CompactUnitFrame_UtilShouldDisplayBuff
-  _G.CompactUnitFrame_UtilShouldDisplayBuff = function(...)
+  local prevhook = _G.AuraUtil.ShouldDisplayBuff
+  _G.AuraUtil.ShouldDisplayBuff = function(...)
     local bannedBuffsIdx = Saved.root().bannedBuffsIdx
     local additionalBuffsIdx = Saved.root().additionalBuffsIdx
 

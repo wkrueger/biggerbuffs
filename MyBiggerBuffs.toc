@@ -1,10 +1,10 @@
-## Interface: 90200
+## Interface: 100000
 ## Title: Blizzard Raid Frames - Bigger Buffs
 ## Notes: Tweaks to Blizzard's raid frames buffs.
 ## SavedVariables: biggerbuffsSaved
 ## LoadOnDemand: 0
 ## Author: scaleable @ azralon-US
-## Version: 9.2.1
+## Version: 10.0.0
 
 embeds.xml
 
