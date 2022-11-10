@@ -64,9 +64,9 @@ local function createBuffFrames(frame)
       child:SetPoint("BOTTOMRIGHT", _G[frameName .. i - 1], "BOTTOMLEFT")
     end
   end
-  frame.maxBuffs = maxbuffs
+  -- frame.maxBuffs = maxbuffs
 
-  -- update size
+  -- -- update size
   local scale = 1.25
   local buffSize = Saved.getOption("scalefactor") * scale
   for i = 1, maxbuffs do
@@ -85,22 +85,22 @@ local function activateMe()
 
   hooksecurefunc("CompactUnitFrame_UpdateAll", createBuffFrames)
 
-  local prevhook = _G.AuraUtil.ShouldDisplayBuff
-  _G.AuraUtil.ShouldDisplayBuff = function(...)
-    local bannedBuffsIdx = Saved.root().bannedBuffsIdx
-    local additionalBuffsIdx = Saved.root().additionalBuffsIdx
+  -- local prevhook = _G.AuraUtil.ShouldDisplayBuff
+  -- _G.AuraUtil.ShouldDisplayBuff = function(...)
+  --   local bannedBuffsIdx = Saved.root().bannedBuffsIdx
+  --   local additionalBuffsIdx = Saved.root().additionalBuffsIdx
 
-    local source, buffId = ...
-    if source == "player" then
-      if bannedBuffsIdx[buffId] ~= nil then
-        return false
-      end
-      if additionalBuffsIdx[buffId] ~= nil then
-        return true
-      end
-    end
-    return prevhook(...)
-  end
+  --   local source, buffId = ...
+  --   if source == "player" then
+  --     if bannedBuffsIdx[buffId] ~= nil then
+  --       return false
+  --     end
+  --     if additionalBuffsIdx[buffId] ~= nil then
+  --       return true
+  --     end
+  --   end
+  --   return prevhook(...)
+  -- end
 end
 
 local frame = CreateFrame("FRAME")
@@ -114,18 +114,6 @@ frame:SetScript(
     if event == "ADDON_LOADED" and arg1 == "MyBiggerBuffs" then
       Saved.init()
       activateMe()
-    elseif event == "PLAYER_REGEN_ENABLED" and Saved.setOption("hidenames", 1) and started == true then
-      Utl.loopAllMembers(
-        function(frameName)
-          _G[frameName .. "Name"]:Show()
-        end
-      )
-    elseif event == "PLAYER_REGEN_DISABLED" and Saved.setOption("hidenames", 1) and started == true then
-      Utl.loopAllMembers(
-        function(frameName)
-          _G[frameName .. "Name"]:Hide()
-        end
-      )
     end
   end
 )
