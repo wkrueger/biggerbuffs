@@ -105,14 +105,7 @@ local function activateMe()
 		if not name or not name:match('^Compact') then
 			return
 		end
-		if InCombatLockdown() then
-			if not UpdateTable[frame] then
-				UpdateTable[frame] = true
-			end
-		else
-			createBuffFrames(frame)
-			return;
-		end
+		createBuffFrames(frame)
 	end)
 
   local prevhook = _G.AuraUtil.ShouldDisplayBuff
