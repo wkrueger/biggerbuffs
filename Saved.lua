@@ -33,7 +33,7 @@ local function init()
   if biggerbuffsSaved.additionalBuffs == nil or biggerbuffsSaved.Version == nil then
     BiggerBuffs.Saved.setAdditionalBuffs(
       {
-        "203553 (Focused Growth)",
+        "203554 (Focused Growth)",
         "200390 (Cultivation)",
         "207386 (Spring Blossoms)",
         "216327 (Light's Grace)",
@@ -49,8 +49,6 @@ local function init()
   end
 
   biggerbuffsSaved.Version = 92001
-
-
 end
 
 local function mapAuraNameToId(auraName)

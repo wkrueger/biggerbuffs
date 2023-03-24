@@ -47,6 +47,15 @@ local function createBuffFrames(frame)
     return
   end
 
+  if frame:IsForbidden() then
+    return
+  end
+
+  local name = frame:GetName()
+  if not name or not name:match('^Compact') then
+    return
+  end
+
   -- insert and reposition missing frames (for >3 buffs)
   local maxbuffs = biggerbuffsSaved.Options.maxbuffs
   local rowsize = biggerbuffsSaved.Options.rowsize or 3
@@ -64,7 +73,11 @@ local function createBuffFrames(frame)
       child:SetPoint("BOTTOMRIGHT", _G[frameName .. i - 1], "BOTTOMLEFT")
     end
   end
-  -- frame.maxBuffs = maxbuffs
+
+  -- this taints the frames
+  if maxbuffs ~= 3 then
+    frame.maxBuffs = maxbuffs
+  end
 
   -- -- update size
   local scale = 1.25
@@ -77,30 +90,40 @@ local function createBuffFrames(frame)
   end
 end
 
+local function checkFrame(frame)
+  if not issecurevariable(frame, "action") and not InCombatLockdown() then
+    frame.action = nil
+    frame:SetAttribute("action");
+  end
+end
+
 local function activateMe()
   if started == true then
     return
   end
   started = true
 
+  for _, frame in ipairs(ActionBarButtonEventsFrame.frames) do
+    hooksecurefunc(frame, "UpdateAction", checkFrame)
+  end
   hooksecurefunc("CompactUnitFrame_UpdateAll", createBuffFrames)
 
-  -- local prevhook = _G.AuraUtil.ShouldDisplayBuff
-  -- _G.AuraUtil.ShouldDisplayBuff = function(...)
-  --   local bannedBuffsIdx = Saved.root().bannedBuffsIdx
-  --   local additionalBuffsIdx = Saved.root().additionalBuffsIdx
+  local prevhook = _G.AuraUtil.ShouldDisplayBuff
+  _G.AuraUtil.ShouldDisplayBuff = function(...)
+    local bannedBuffsIdx = Saved.root().bannedBuffsIdx
+    local additionalBuffsIdx = Saved.root().additionalBuffsIdx
 
-  --   local source, buffId = ...
-  --   if source == "player" then
-  --     if bannedBuffsIdx[buffId] ~= nil then
-  --       return false
-  --     end
-  --     if additionalBuffsIdx[buffId] ~= nil then
-  --       return true
-  --     end
-  --   end
-  --   return prevhook(...)
-  -- end
+    local source, buffId = ...
+    if source == "player" then
+      if bannedBuffsIdx[buffId] ~= nil then
+        return false
+      end
+      if additionalBuffsIdx[buffId] ~= nil then
+        return true
+      end
+    end
+    return prevhook(...)
+  end
 end
 
 local frame = CreateFrame("FRAME")

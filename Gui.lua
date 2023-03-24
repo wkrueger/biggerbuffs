@@ -42,11 +42,11 @@ local function ShowUI()
   _scale:SetText(Saved.getOption("scalefactor"))
   frame:AddChild(_scale)
 
-  -- local _maxbuffs = AceGUI:Create("EditBox")
-  -- _maxbuffs:SetLabel("Max Buffs")
-  -- _maxbuffs:SetWidth(200)
-  -- _maxbuffs:SetText(Saved.getOption("maxbuffs"))
-  -- frame:AddChild(_maxbuffs)
+  local _maxbuffs = AceGUI:Create("EditBox")
+  _maxbuffs:SetLabel("Max Buffs")
+  _maxbuffs:SetWidth(200)
+  _maxbuffs:SetText(Saved.getOption("maxbuffs"))
+  frame:AddChild(_maxbuffs)
 
   local _rowsize = AceGUI:Create("EditBox")
   _rowsize:SetLabel("Row Size")
@@ -59,49 +59,49 @@ local function ShowUI()
   _message:SetText("Some settings are only reflected after switching between two raid profiles.")
   frame:AddChild(_message)
 
-  -- local _additionalBuffs = AceGUI:Create("MultiLineEditBox")
-  -- _additionalBuffs:SetLabel("Additional Buffs")
-  -- _additionalBuffs:SetWidth(300)
-  -- _additionalBuffs:SetHeight(200)
-  -- local buffsTxt = table.concat(Saved.root().additionalBuffs, "\n")
-  -- _additionalBuffs:SetText(buffsTxt)
-  -- frame:AddChild(_additionalBuffs)
+  local _additionalBuffs = AceGUI:Create("MultiLineEditBox")
+  _additionalBuffs:SetLabel("Additional Buffs")
+  _additionalBuffs:SetWidth(300)
+  _additionalBuffs:SetHeight(200)
+  local buffsTxt = table.concat(Saved.root().additionalBuffs, "\n")
+  _additionalBuffs:SetText(buffsTxt)
+  frame:AddChild(_additionalBuffs)
 
-  -- local _bannedBuffs = AceGUI:Create("MultiLineEditBox")
-  -- _bannedBuffs:SetLabel("Banned Buffs")
-  -- _bannedBuffs:SetWidth(300)
-  -- _bannedBuffs:SetHeight(200)
-  -- local bannedTxt = table.concat(Saved.root().bannedBuffs, "\n")
-  -- _bannedBuffs:SetText(bannedTxt)
-  -- frame:AddChild(_bannedBuffs)
+  local _bannedBuffs = AceGUI:Create("MultiLineEditBox")
+  _bannedBuffs:SetLabel("Banned Buffs")
+  _bannedBuffs:SetWidth(300)
+  _bannedBuffs:SetHeight(200)
+  local bannedTxt = table.concat(Saved.root().bannedBuffs, "\n")
+  _bannedBuffs:SetText(bannedTxt)
+  frame:AddChild(_bannedBuffs)
 
-  -- local _message = AceGUI:Create("Label")
-  -- _message:SetFullWidth(true)
-  -- _message:SetText("Only the first word on each line is taken into account.")
-  -- frame:AddChild(_message)
+  local _message = AceGUI:Create("Label")
+  _message:SetFullWidth(true)
+  _message:SetText("Only the first word on each line is taken into account.")
+  frame:AddChild(_message)
 
   frame:SetCallback(
     "OnClose",
     function(wg)
       Saved.setOption("scalefactor", tonumber(_scale:GetText()))
-      -- Saved.setOption("maxbuffs", tonumber(_maxbuffs:GetText()))
+      Saved.setOption("maxbuffs", tonumber(_maxbuffs:GetText()))
       Saved.setOption("rowsize", tonumber(_rowsize:GetText()))
-      -- Saved.setAdditionalBuffs(
-      --   map(
-      --     strSplit(_additionalBuffs:GetText()),
-      --     function(str)
-      --       return trim(str)
-      --     end
-      --   )
-      -- )
-      -- Saved.setBannedBuffs(
-      --   map(
-      --     strSplit(_bannedBuffs:GetText()),
-      --     function(str)
-      --       return trim(str)
-      --     end
-      --   )
-      -- )
+      Saved.setAdditionalBuffs(
+        map(
+          strSplit(_additionalBuffs:GetText()),
+          function(str)
+            return trim(str)
+          end
+        )
+      )
+      Saved.setBannedBuffs(
+        map(
+          strSplit(_bannedBuffs:GetText()),
+          function(str)
+            return trim(str)
+          end
+        )
+      )
     end
   )
 end
